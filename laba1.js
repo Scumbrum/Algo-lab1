@@ -88,88 +88,86 @@ function informed (current, goal, heuristic) {
   const coord = []
   for (let i = 0; i < current.length; i++) {
     for (let j = 0; j < current.length; j++) {
-        if(current[i][j]==" "){
-                coord.push(i)
-                coord.push(j)
-            }
+      if (current[i][j] == ' ') {
+        coord.push(i)
+        coord.push(j)
+      }
+    }
+  }
+  queue.queue(new Node([], coord, 0, h, current))
+  while (true) {
+    const matrix = queue.peek().matrix
+    const node = queue.dequeue()
+    chek:
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 3; j++) {
+        if (matrix[i][j] != goal[i][j]) {
+          break chek
         }
+      }
+      if (i == 2) {
+        return step
+      }
+    }
+    expand(node).forEach((element) => {
+      element.far = heuristic(element.matrix, goal)
+      node.childs.push(element)
+      queue.queue(element)
+    })
+    step++
+  }
+}
+function rDLS (current, goal, limit) {
+  if (current.deep > limit) {
+    return 'Cutoff'
+  }
+  check:
+  for (let i = 0; i < goal.length; i++) {
+    for (let j = 0; j < goal.length; j++) {
+      if (current.matrix[i][j] != goal[i][j]) {
+        break check
+      }
+    }
+    if (i == 2) {
+      return current.deep
+    }
+  }
+  let result
+  let limitOccured = false
+  const next = expand(current)
+  for (let i = 0; i < next.length; i++) {
+    result = rDLS(next[i], goal, limit)
+    if (result != 'Cutoff') {
+      return result
+    } else {
+      limitOccured = true
+    }
+  }
+  if (limitOccured) {
+    return 'Cutoff'
+  }
+}
+function ids (current, goal, depth) {
+  const coord = []
+  for (let i = 0; i < current.length; i++) {
+    for (let j = 0; j < current.length; j++) {
+      if (current[i][j] == ' ') {
+        coord.push(i)
+        coord.push(j)
+      }
+    }
+  }
+  let result = null
+  for (let i = 0; i < depth; i++) {
+    result = rDLS(new Node([], coord, 0, -1, current), goal, i)
 
+    if (result != 'Cutoff') {
+      return result
     }
-    queue.queue(new Node([],coord,0,h,current))
-    while(true){
-        let matrix = queue.peek().matrix
-        let node = queue.dequeue()
-        chek:
-        for(i=0;i<3;i++){
-            for(j=0;j<3;j++){
-                if(matrix[i][j]!=goal[i][j]){
-                    break chek
-                }
-            }
-            if(i==2){
-                return step
-            }
-        }
-        expand(node).forEach((element) => {
-            element.far = heuristic(element.matrix,goal)
-            node.childs.push(element)
-            queue.queue(element)
-        })
-        step++;
-    }
+  }
+  return result
 }
-function rDLS(current,goal,limit){
-    if(current.deep>limit){
-        return "Cutoff"
-    }
-    check:
-    for(let i=0;i<goal.length;i++){
-        for(let j=0;j<goal.length;j++){
-            if(current.matrix[i][j]!=goal[i][j]){
-                break check
-            }
-        }
-        if(i==2){
-            return current.deep
-        }
-    }
-    let result
-    let limitOccured=false
-    let next= expand(current)
-    for(let i=0;i<next.length;i++){
-        result=rDLS(next[i],goal,limit)
-        if(result!="Cutoff"){
-            return result
-        }
-        else{
-            limitOccured=true
-        }
-    }
-    if(limitOccured){
-        return "Cutoff"
-    }
-}
-function ids(current, goal, depth){
-    let coord=[]
-    for(let i=0;i<current.length;i++){
-        for(let j=0;j<current.length;j++){
-            if(current[i][j]==" "){
-                coord.push(i)
-                coord.push(j)
-            }
-        }
-    }
-    let result = null
-    for(let i =0;i<depth;i++){
-        result = rDLS(new Node([],coord,0,-1,current),goal,i)
-        
-        if(result!="Cutoff"){
-            return result
-        } 
-    }
-    return result
-}
-let current = [["1","2","3"],["4","7","5"],[" ","6","8"]]
-let goal = [["1","2","3"],["4","7","5"],["6"," ","8"]]
-console.log(informed(current,goal,heuristic))
-console.log(ids(current,goal,3))
+const current = [['1', '2', '3'], ['4', '7', '5'], [' ', '6', '8']]
+const goal = [['1', '2', '3'], ['4', '7', '5'], ['6', ' ', '8']]
+console.log(informed(current, goal, heuristic))
+console.log(ids(current, goal, 3))
